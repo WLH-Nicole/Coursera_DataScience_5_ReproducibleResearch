@@ -75,6 +75,7 @@ head(sumStepsByDay,3)
 plot(sumStepsByDay$date,sumStepsByDay$steps, type="h", main="Histogram of Daily Steps", xlab="Date", ylab="Steps per Day", col="blue", lwd=8)
 abline(h=mean(sumStepsByDay$steps, na.rm=TRUE), col="red", lwd=2)
 ```
+![](figure/plotting_histogram.png)
 
 #### *b. Day counts on step*
 ```{r Day counts on step}
