@@ -410,5 +410,6 @@ ggplot(imputeInt5min, aes(x =interval , y=meanIntStep, color=day)) +
 ```
 
 ![](test_files/figure-html/weekday vs weekend-1.png)<!-- -->
+![](figure/test.png)<!-- -->
 
 
