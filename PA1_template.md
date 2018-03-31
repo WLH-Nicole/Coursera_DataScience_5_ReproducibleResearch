@@ -81,6 +81,7 @@ abline(h=mean(sumStepsByDay$steps, na.rm=TRUE), col="red", lwd=2)
 ```{r Day counts on step}
 hist(sumStepsByDay$steps, xlab="Steps", ylab = "Days", main = "Total Steps Per Day", breaks=50, col="blue")
 ```
+![](figure/Day_counts_on_step.png)
 
 3. Calculate and report the mean and median of the total number of steps taken per day
 ```{r mean and median}
@@ -115,6 +116,7 @@ plot(x = Int5min$interval,
 abline(h=mean(Int5min$steps, na.rm=TRUE), col="red", lwd=2)
 
 ```
+![](figure/5-minute_interval.png)
 
 2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 ```{r maximum number of steps}
@@ -174,11 +176,13 @@ head(sumStepsByDayImpute,3)
 plot(sumStepsByDayImpute$date, sumStepsByDayImpute$steps, type="h", main="Histogram of Daily Steps (without missing values)", xlab="Date", ylab="Steps per Day", col="purple", lwd=8)
 abline(h=mean(sumStepsByDay$steps, na.rm=TRUE), col="red", lwd=2)
 ```
+![](figure/plotting_histogram_for_imputed_data.png)
 
 #### *b. Day counts on step*
 ```{r Day counts on step for impute}
 hist(sumStepsByDayImpute$steps, xlab="Steps", ylab = "Days", main = "Total Steps Per Day (without missing values)", breaks=50, col="purple")
 ```
+![](figure/Day_counts_on_step_for_impute.png)
 
 #### *Data with missing values, NA:*
 ```{r summary activity}
@@ -222,4 +226,4 @@ ggplot(imputeInt5min, aes(x =interval , y=meanIntStep, color=day)) +
        theme(strip.background =element_rect(fill="yellow")) +
        theme(strip.text = element_text(colour = 'black'))
 ```
-
+![](figure/weekday_vs_weekend.png)
