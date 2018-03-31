@@ -409,6 +409,6 @@ ggplot(imputeInt5min, aes(x =interval , y=meanIntStep, color=day)) +
        theme(strip.text = element_text(colour = 'black'))
 ```
 
-![](figure/weekday vs weekend-1.png)<!-- -->
+![](figure/test.png)<!-- -->
 
 
