@@ -110,7 +110,7 @@ plot(sumStepsByDay$date,sumStepsByDay$steps, type="h", main="Histogram of Daily 
 abline(h=mean(sumStepsByDay$steps, na.rm=TRUE), col="red", lwd=2)
 ```
 
-![](test_files/figure-html/type h for plotting histogram-1.png)<!-- -->
+![](figure/type h for plotting histogram-1.png)<!-- -->
 
 #### *b. Day counts on step*
 
@@ -118,7 +118,7 @@ abline(h=mean(sumStepsByDay$steps, na.rm=TRUE), col="red", lwd=2)
 hist(sumStepsByDay$steps, xlab="Steps", ylab = "Days", main = "Total Steps Per Day", breaks=50, col="blue")
 ```
 
-![](test_files/figure-html/Day counts on step-1.png)<!-- -->
+![](figure/Day counts on step-1.png)<!-- -->
 
 3. Calculate and report the mean and median of the total number of steps taken per day
 
@@ -185,7 +185,7 @@ plot(x = Int5min$interval,
 abline(h=mean(Int5min$steps, na.rm=TRUE), col="red", lwd=2)
 ```
 
-![](test_files/figure-html/5-minute interval-1.png)<!-- -->
+![](figure/5-minute interval-1.png)<!-- -->
 
 2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 
@@ -304,7 +304,7 @@ plot(sumStepsByDayImpute$date, sumStepsByDayImpute$steps, type="h", main="Histog
 abline(h=mean(sumStepsByDay$steps, na.rm=TRUE), col="red", lwd=2)
 ```
 
-![](test_files/figure-html/type h for plotting histogram for imputed data-1.png)<!-- -->
+![](figure/type h for plotting histogram for imputed data-1.png)<!-- -->
 
 #### *b. Day counts on step*
 
@@ -312,7 +312,7 @@ abline(h=mean(sumStepsByDay$steps, na.rm=TRUE), col="red", lwd=2)
 hist(sumStepsByDayImpute$steps, xlab="Steps", ylab = "Days", main = "Total Steps Per Day (without missing values)", breaks=50, col="purple")
 ```
 
-![](test_files/figure-html/Day counts on step for impute-1.png)<!-- -->
+![](figure/Day counts on step for impute-1.png)<!-- -->
 
 #### *Data with missing values, NA:*
 
@@ -409,7 +409,6 @@ ggplot(imputeInt5min, aes(x =interval , y=meanIntStep, color=day)) +
        theme(strip.text = element_text(colour = 'black'))
 ```
 
-![](test_files/figure-html/weekday vs weekend-1.png)<!-- -->
-![](figure/test.png)<!-- -->
+![](figure/weekday vs weekend-1.png)<!-- -->
 
 
