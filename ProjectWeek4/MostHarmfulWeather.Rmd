@@ -1,0 +1,186 @@
+---
+title: 'The Most Harmful Weather impacts on Human Health and Economy in the US'
+author: "Wan-Ling Hsu"
+date: "4/13/2018"
+output: 
+  html_document:
+    keep_md: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 1. Synopsis
+Storms and other severe weather events can cause both human health and economic problems for communities and municipalities. The U.S. National Oceanic and Atmospheric Administrations (NOAA) storm database tracks characteristics of major storms and weather events in the United States from 1950 to November 2011, including when and where they occur, as well as estimates of any fatalities, injuries, and property damage. This data was used to explore the effects of severe weather events on both population health and economy in the US. The following are the details consist of tables, figures and the R code for the entire analysis about how to answer these two questions:  
+
+* Across the United States, which types of events are most harmful with respect to population health?
+* Across the United States, which types of events have the greatest economic consequences?
+
+## 2. Data Processing
+### Data
+The data is in the form of a comma-separated-value file compressed via the bzip2 algorithm. 
+
+* [Storm Data](https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2) [47Mb]
+
+Documentation about the database and variables defined.
+
+* [National Weather Service Storm Data Documentation](https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf)
+* [National Climatic Data Center Storm Events FAQ](https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2FNCDC%20Storm%20Events-FAQ%20Page.pdf)
+
+### 1a. Download the raw data and extract the data into a dataframe
+```{r, echo=TRUE, eval=TRUE}
+## load library
+library(reshape2)
+library(ggplot2)
+library(plotly)
+
+#Download the raw data file
+if(!file.exists("stormData.csv.bz2")) {
+  download.file("https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2",
+  destfile = "stormData.csv.bz2", method = "curl")
+}
+
+# Read data
+rawData <- read.csv(bzfile("stormData.csv.bz2"), sep=",", header=T); dim(rawData)
+# see variables name
+names(rawData)
+```
+
+### 1b. Only get the following 7 variables related to questions.
+* EVTYPE     - a measure of event type (e.g. tornado, flood, etc.)
+* FATALITIES - a measure of harm to human health
+* INJURIES   - a measure of harm to human health
+* PROPDMG    - a measure of property damage and hence economic damage in USD
+* PROPDMGEXP - a measure of magnitude of property damage (e.g. thousands, millions USD, etc.)
+* CROPDMG    - a measure of crop damage and hence economic damage in USD
+* CROPDMGEXP - a measure of magnitude of crop damage (e.g. thousands, millions USD, etc.)
+
+```{r, echo=TRUE, eval=TRUE}
+subData <- rawData[ , c("EVTYPE", "FATALITIES", "INJURIES", "PROPDMG", "PROPDMGEXP", "CROPDMG", "CROPDMGEXP")]
+str(subData)
+```
+
+### 1c. Convert property damage and crop damage to appropriate values
+
+```{r, echo=TRUE, eval=TRUE}
+unique(subData$PROPDMGEXP)
+unique(subData$CROPDMGEXP)
+```
+
+### 1d. A function for converting
+H or h: hundred (10^2), K or k: thousand (10^3), M or m: million (10^6), and B or b: billion (10^9),  .
+```{r, echo=TRUE, eval=TRUE}
+Convert <- function(data) {
+        
+        #Property Damage
+        data$PROPDMGEXP <- as.character(data$PROPDMGEXP)
+        data$PROPDMGEXP = gsub("\\-|\\?|\\+","0",data$PROPDMGEXP)
+        data$PROPDMGEXP = gsub("H|h", "2", data$PROPDMGEXP)
+        data$PROPDMGEXP = gsub("K|k", "3", data$PROPDMGEXP)
+        data$PROPDMGEXP = gsub("M|m", "6", data$PROPDMGEXP)
+        data$PROPDMGEXP = gsub("B|b", "9", data$PROPDMGEXP)
+        data$PROPDMGEXP <- as.numeric(data$PROPDMGEXP)
+        data$PROPDMGEXP[is.na(data$PROPDMGEXP)] = 0
+        data$TIDYPD     <- data$PROPDMG * 10^data$PROPDMGEXP
+        
+        #crop damage
+        data$CROPDMGEXP <- as.character(data$CROPDMGEXP)
+        data$CROPDMGEXP = gsub("\\?", "0", data$CROPDMGEXP)
+        data$CROPDMGEXP = gsub("K|k", "3", data$CROPDMGEXP)
+        data$CROPDMGEXP = gsub("M|m", "6", data$CROPDMGEXP)
+        data$CROPDMGEXP = gsub("B|b", "9", data$CROPDMGEXP)
+        data$CROPDMGEXP <- as.numeric(data$CROPDMGEXP)
+        data$CROPDMGEXP[is.na(data$CROPDMGEXP)] = 0
+        data$TIDYCD     <- data$CROPDMG * 10^data$CROPDMGEXP
+        
+        return(data)
+}       
+```
+
+### 1e. Get a tidy dataset 
+```{r, echo=TRUE, eval=TRUE}
+tidyData <- Convert(subData)
+str(tidyData)
+```
+## 3. RESULTS
+## 3.1. Across the United States, which types of events are most harmful with respect to population health?
+### 3.1.a. Total number of fatalities and injuries by top 10 weather events
+```{r, echo=TRUE, eval=TRUE}
+# Get total number of fatalities by weather events
+sumFatal <- aggregate(FATALITIES ~ EVTYPE, data=tidyData, sum); dim(sumFatal)
+
+# Get total number of injuries by weather events
+sumInjur <- aggregate(INJURIES ~ EVTYPE, data=tidyData, sum); dim(sumInjur)
+
+# Merge  total number of fatalities and injuries by weather events
+sumHarm <- merge(sumFatal, sumInjur, by="EVTYPE")
+
+# Get total
+sumHarm$TOTAL <- sumHarm$FATALITIES + sumHarm$INJURIES; dim(sumHarm)
+
+# top 10 weather events
+sort.sumHarm <- sumHarm[order(-sumHarm$TOTAL), ][1:10, ];  sort.sumHarm
+```
+### 3.1.b. Melting data for making plot
+```{r, echo=TRUE, eval=TRUE}
+eventCC <- melt(sort.sumHarm, id.vars="EVTYPE", variable.name = "CaseType"); dim(eventCC)
+head(eventCC)
+```
+
+
+### 3.1.c. Make a plot for Top 10 US Harmful Weather Events
+```{r, echo=TRUE, eval=TRUE}
+ggplot(eventCC, aes(x=reorder(EVTYPE, -value), y=value)) + 
+    geom_bar(stat="identity", aes(fill=CaseType), position="dodge") + 
+    scale_fill_manual(values=c("red", "green3", "blue")) + 
+    theme_bw() + 
+    theme(plot.title = element_text(hjust = 0.5)) +
+    theme(axis.text.x = element_text(angle = 35, hjust = 1)) + 
+    labs(title = "Top 10 US Harmful Weather Events Impact on Human Health", 
+                x = "Weather Event", y = "Case Count") 
+
+```
+
+## 3.2. Across the United States, which types of events have the greatest economic consequences?
+### 3.2.a. Total number of damages by top 10 weather events
+```{r, echo=TRUE, eval=TRUE}
+# Get total number of property damage by weather events
+sumPD <- aggregate(TIDYPD ~ EVTYPE, data=tidyData, sum); dim(sumPD)
+
+# Get total number of crop damage by weather events
+sumCD <- aggregate(TIDYCD ~ EVTYPE, data=tidyData, sum); dim(sumCD)
+
+# Merge  total number of property damage and crop damage by weather events
+sumUSD <- merge(sumPD, sumCD, by="EVTYPE")
+
+# Get total
+sumUSD$USD <- sumUSD$TIDYPD + sumUSD$TIDYCD; dim(sumUSD)
+# top 10 weather events
+sort.sumUSD <- sumUSD[order(-sumUSD$USD), ][1:10, ];  sort.sumUSD
+```
+
+
+### 3.2.b. Melting data for making plot
+```{r, echo=TRUE, eval=TRUE}
+eventDT <- melt(sort.sumUSD, id.vars="EVTYPE", variable.name = "DamageType"); dim(eventDT)
+head(eventDT)
+```
+
+
+### 3.2.c. Make a plot for Top 10 US Harmful Weather Events Impact on Economy
+```{r, echo=TRUE, eval=TRUE}
+ggplot(eventDT, aes(x=reorder(EVTYPE, -value), y=value)) + 
+    geom_bar(stat="identity", aes(fill=DamageType), position="dodge") + 
+    scale_fill_manual(values=c("red", "green3", "blue"), 
+                      labels=c("Property Damage", "Crop Damage", "Total Damage")) + 
+    theme_bw() + 
+    theme(plot.title = element_text(hjust = 0.5)) +
+    theme(axis.text.x = element_text(angle = 35, hjust = 1)) + 
+    labs(title = "Top 10 US Harmful Weather Events Impact on Economy", 
+                x = "Weather Event", y = "Damage Cost (USD)") 
+```
+
+
+## 4. Conclusion
+In United States, **Tornados** are the most harmfull weather events on population health (including injury and fatalities) which have been caused 96,979 persons injured (91,346) or killed (5,633) from 1950 to November 2011. Moreover, **Floods** resulted in the most economic damage which caused about 150 billions of Dollars ($150,319,678,257) from 1950 to November 2011 .
